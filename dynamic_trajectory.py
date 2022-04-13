@@ -70,9 +70,43 @@ def generate_car_csv(all_route):
         route_csv.writerow([json.dumps(temp_route)])
 
 
+def generate_route_time(record_path):
+    records = pickle.load(open(record_path, 'rb'))
+    routes = {}
+    routes['data'] = []
+    for record in tqdm(records):
+        for key in record:
+            driver = record[key]
+            if isinstance(driver[0], list):
+                temp_time = []
+                temp_coordinate = []
+                temp_type = 2.0
+                flag = True
+                for position in driver:
+                    temp_time.append(position[-1])
+                    temp_coordinate.append([position[0], position[1]])
+                    if position[-2] == 1.0 and flag:
+                        routes['data'].append({
+                            'time_list': temp_time,
+                            'traj_list': temp_coordinate,
+                            'type': temp_type
+                        })
+                        temp_type = 1.0
+                        temp_coordinate = [[position[0], position[1]]]
+                        temp_time = [position[-1]]
+                        flag = False
+                routes['data'].append({
+                    'time_list': temp_time,
+                    'traj_list': temp_coordinate,
+                    'type': temp_type
+                })
+    file = open('./data/simulator_animation.json', 'w')
+    file.write(json.dumps(routes, indent=1))
+
+
 if __name__ == '__main__':
-    node_file = './data/road_network_information.pickle'
-    route_file = './data/requests.pickle'
-    all_route = generate_route_lat_lng(route_file, node_file)
-    generate_car_csv(all_route)
-    # draw_gps(all_route, './data', 'plan_A.html')
+    record_path = './data/record/'
+    record_file = os.listdir(record_path)
+    print(record_file)
+    for file in record_file:
+        generate_route_time(record_path+file)

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+
+    <style type="text/css">
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+    <canvas id="canvas"></canvas>
+
+    <script type="text/javascript" src="//apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//api.map.baidu.com/api?v=2.0&ak=1XjLLEhZhQNUzd93EjU5nOGQ"></script>
+    <script type="text/javascript" src="../static/mapv.js"></script>
+
+    <script type="text/javascript">
+
+        // 百度地图API功能
+        var map = new BMap.Map("map", {
+            enableMapClick: false
+        });    // 创建Map实例
+        map.centerAndZoom(new BMap.Point(-73.982316, 40.7730913), 12);  // 初始化地图,设置中心点坐标和地图级别
+        map.enableScrollWheelZoom(true); // 开启鼠标滚轮缩放
+
+        // 地图自定义样式
+        map.setMapStyle({
+            styleJson: [{
+                "featureType": "water",
+                "elementType": "all",
+                "stylers": {
+                    "color": "#044161"
+                }
+            }, {
+                "featureType": "land",
+                "elementType": "all",
+                "stylers": {
+                    "color": "#091934"
+                }
+            }, {
+                "featureType": "boundary",
+                "elementType": "geometry",
+                "stylers": {
+                    "color": "#064f85"
+                }
+            }, {
+                "featureType": "railway",
+                "elementType": "all",
+                "stylers": {
+                    "visibility": "off"
+                }
+            }, {
+                "featureType": "highway",
+                "elementType": "geometry",
+                "stylers": {
+                    "color": "#004981"
+                }
+            }, {
+                "featureType": "highway",
+                "elementType": "geometry.fill",
+                "stylers": {
+                    "color": "#005b96",
+                    "lightness": 1
+                }
+            }, {
+                "featureType": "highway",
+                "elementType": "labels",
+                "stylers": {
+                    "visibility": "on"
+                }
+            }, {
+                "featureType": "arterial",
+                "elementType": "geometry",
+                "stylers": {
+                    "color": "#004981",
+                    "lightness": -39
+                }
+            }, {
+                "featureType": "arterial",
+                "elementType": "geometry.fill",
+                "stylers": {
+                    "color": "#00508b"
+                }
+            }, {
+                "featureType": "poi",
+                "elementType": "all",
+                "stylers": {
+                    "visibility": "off"
+                }
+            }, {
+                "featureType": "green",
+                "elementType": "all",
+                "stylers": {
+                    "color": "#056197",
+                    "visibility": "off"
+                }
+            }, {
+                "featureType": "subway",
+                "elementType": "all",
+                "stylers": {
+                    "visibility": "off"
+                }
+            }, {
+                "featureType": "manmade",
+                "elementType": "all",
+                "stylers": {
+                    "visibility": "off"
+                }
+            }, {
+                "featureType": "local",
+                "elementType": "all",
+                "stylers": {
+                    "visibility": "off"
+                }
+            }, {
+                "featureType": "arterial",
+                "elementType": "labels",
+                "stylers": {
+                    "visibility": "off"
+                }
+            }, {
+                "featureType": "boundary",
+                "elementType": "geometry.fill",
+                "stylers": {
+                    "color": "#029fd4"
+                }
+            }, {
+                "featureType": "building",
+                "elementType": "all",
+                "stylers": {
+                    "color": "#1a5787"
+                }
+            }, {
+                "featureType": "label",
+                "elementType": "all",
+                "stylers": {
+                    "visibility": "off"
+                }
+            }, {
+                "featureType": "poi",
+                "elementType": "labels.text.fill",
+                "stylers": {
+                    "color": "#ffffff"
+                }
+            }, {
+                "featureType": "poi",
+                "elementType": "labels.text.stroke",
+                "stylers": {
+                    "color": "#1e1c1c"
+                }
+            }, {
+                "featureType": "administrative",
+                "elementType": "labels",
+                "stylers": {
+                    "visibility": "off"
+                }
+            },{
+                "featureType": "road",
+                "elementType": "labels",
+                "stylers": {
+                    "visibility": "off"
+                }
+            }]
+        });
+
+        $.get('../data/simulator_test.json', function (rs) {
+
+            var data = [];
+            var timeData = [];
+            var time_base = 36000;
+
+            rs = rs.data;
+            for (var i = 0; i < 2000; i++) {
+                var time = rs[i].time_list;
+                var traj = rs[i].traj_list;
+                var coordinates = [];
+                for (j = 0; j < time.length; j += 1) {
+                    console.log([traj[j][1], traj[j][0]]);
+                    coordinates.push([traj[j][1], traj[j][0]]);
+                    if(rs[i].type_list[j] === 1.0){
+                        timeData.push({
+                        fillStyle: 'red',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [traj[j][1], traj[j][0]]
+                        },
+                        count: 1,
+                        time: time[j] - time_base
+                    })
+                    }
+                    else {
+                        timeData.push({
+                            fillStyle: 'green',
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [traj[j][1], traj[j][0]]
+                            },
+                            count: 1,
+                            time: time[j] - time_base
+                        })
+                    }
+                }
+            }
+            var dataSet = new mapv.DataSet(timeData);
+
+            var options = {
+                coordType: 'GCJ02',
+                globalCompositeOperation: "lighter",
+                size: 2,
+                animation: {
+
+                    trails: 10,
+                    duration: 50,
+                },
+                draw: 'simple'
+            };
+            var mapvLayer = new mapv.baiduMapLayer(map, dataSet, options);
+        });
+        </script>
+	
+</body>
+</html>

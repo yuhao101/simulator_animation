@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" >
+  <title>BMapGL</title>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" >
+  <style type="text/css">
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    #map_container {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+  </style>
+
+  <script type="text/javascript" src="//api.map.baidu.com/api?v=1.0&type=webgl&ak=Zyq6TjFQ1679hxUWSUhud4i03GThAEGI"></script>
+  <script type="text/javascript" src="../static/common.js"></script>
+  <script type="text/javascript" src="https://code.bdstatic.com/npm/mapvgl@1.0.0-beta.119/dist/mapvgl.min.js"></script>
+
+</head>
+<body>
+
+<div id="map_container"></div>
+
+
+<script>
+
+  /* global BMapGL */
+
+
+  var map = initMap({
+        tilt: 60,
+        heading: 0,
+        center: [-73.982316, 40.7730913],
+        zoom: 13,
+    });
+
+  // car
+  // var map = initMap({
+  //         tilt: 60,
+  //         heading: 0,
+  //         center: [-73.982316, 40.7730913],
+  //         zoom: 14,
+  //         // style: whiteStyle,
+  //         displayOptions: {
+  //             poi: false
+  //         },
+  //         style: purpleStyle,
+  //         skyColors: [
+  //             // 地面颜色
+  //             'rgba(226, 237, 248, 0)',
+  //             // 天空颜色
+  //             'rgba(186, 211, 252, 1)'
+  //         ]
+  //     });
+  var view = new mapvgl.View({
+    map: map
+  });
+
+  var timeOffset = 36000;
+
+  fetch('../data/simulator_animation.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+    rs = rs.data;
+    var data = [];
+    for (var i = 0; i < 100; i++) {
+      var type = rs[i].type;
+      console.log(type);
+      var traj_list = rs[i].traj_list;
+      var time_list = rs[i].time_list;
+      var traj = [];
+      var timeArr = [];
+      for (var j = 0; j < time_list.length; j++) {
+        timeArr.push(time_list[j]);
+        traj.push([
+          traj_list[j][1],
+          traj_list[j][0],
+          1,
+          time_list[j]- timeOffset
+        ]);
+      }
+      if (type === 1) {
+        data.push({
+        color: 'red',
+        time: timeArr,
+        geometry: {
+          type: 'LineString',
+          coordinates: traj
+        }
+      });
+      }
+      else{
+        data.push({
+        color: 'green',
+        time: timeArr,
+        geometry: {
+          type: 'LineString',
+          coordinates: traj
+        }
+      });
+    }
+  }
+
+  var lineLayer = new mapvgl.LineTripLayer({
+    step: 1,
+    trailLength: 500,
+    startTime: 0,
+    endTime: 43200,
+  });
+  view.addLayer(lineLayer);
+  lineLayer.setData(data);
+  // var carlineLayer = new mapvgl.CarLineLayer({
+  //           url: '../static/car.gltf',
+  //           autoPlay: true,
+  //           step: 4,
+  //           scale: 10,
+  //       });
+  //
+  // view.addLayer(carlineLayer);
+  // carlineLayer.setData(data);
+});
+
+</script>
+</body>
+</html>
