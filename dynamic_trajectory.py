@@ -104,9 +104,39 @@ def generate_route_time(record_path):
     file.write(json.dumps(routes, indent=1))
 
 
+def calculate_metrics(record_path):
+    records = pickle.load(open(record_path, 'rb'))
+    order = pickle.load(open('./data/order.pickle', 'rb'))
+    order_num_time = {}
+    matched_rate_time = {}
+    current_num = 0
+    matched_num = 0
+    pickup_time = []
+    for i in range(36000, 79200, 5):
+        for j in range(0, 5):
+            if (i+j) in order.keys():
+                current_num += len(order[i+j])
+        order_num_time[i] = current_num
+    print(order_num_time)
+    for i, time in enumerate(records):
+        for driver in time:
+            if isinstance(time[driver][0], list):
+                matched_num += 1
+                # for route in time[driver]:
+                #     if route[-2] == 1.0:
+                #         pickup_time.append([time[driver][0][-1], min(route[-1], 79200)])
+                #         break
+        matched_rate_time[i*5+36000].append(matched_num/order_num_time[i*5+36000])
+    print(matched_rate_time)
+
+    file = open('./data/simulator_metrics.json', 'w')
+    file.write(json.dumps(matched_rate_time, indent=1))
+
+
 if __name__ == '__main__':
     record_path = './data/record/'
     record_file = os.listdir(record_path)
     print(record_file)
     for file in record_file:
-        generate_route_time(record_path+file)
+        # generate_route_time(record_path+file)
+        calculate_metrics(record_path+file)
