@@ -5,6 +5,7 @@ from folium import plugins
 import pickle
 import json
 import csv
+import sys
 
 
 def draw_gps(locations_true, output_path, file_name):
@@ -74,10 +75,23 @@ def generate_route_time(record_path):
     records = pickle.load(open(record_path, 'rb'))
     routes = {}
     routes['data'] = []
+    driver_cruising = {}
     for record in tqdm(records):
         for key in record:
             driver = record[key]
             if isinstance(driver[0], list):
+                if key in driver_cruising.keys():
+                    temp_time = driver_cruising[key][0]
+                    temp_time.append(driver[0][-1])
+                    temp_coordinate = driver_cruising[key][1]
+                    temp_coordinate.append([driver[0][0], driver[0][1]])
+                    temp_type = 0.0
+                    routes['data'].append({
+                        'time_list': temp_time,
+                        'traj_list': temp_coordinate,
+                        'type': temp_type
+                    })
+                    driver_cruising[key] = [[], []]
                 temp_time = []
                 temp_coordinate = []
                 temp_type = 2.0
@@ -100,6 +114,12 @@ def generate_route_time(record_path):
                     'traj_list': temp_coordinate,
                     'type': temp_type
                 })
+            else:
+                if key not in driver_cruising.keys():
+                    driver_cruising[key] = [[driver[-1]], [[driver[0], driver[1]]]]
+                else:
+                    driver_cruising[key][0].append(driver[-1])
+                    driver_cruising[key][1].append([driver[0], driver[1]])
     file = open('./data/simulator_animation.json', 'w')
     file.write(json.dumps(routes, indent=1))
 
@@ -111,32 +131,189 @@ def calculate_metrics(record_path):
     matched_rate_time = {}
     current_num = 0
     matched_num = 0
-    pickup_time = []
+    driver_no_cruising_time = {}
     for i in range(36000, 79200, 5):
         for j in range(0, 5):
             if (i+j) in order.keys():
                 current_num += len(order[i+j])
         order_num_time[i] = current_num
-    print(order_num_time)
-    for i, time in enumerate(records):
+    for i, time in enumerate(tqdm(records)):
         for driver in time:
+            if driver not in driver_no_cruising_time.keys():
+                driver_no_cruising_time[driver] = [set(), set()]
             if isinstance(time[driver][0], list):
+                record = time[driver]
                 matched_num += 1
-                # for route in time[driver]:
-                #     if route[-2] == 1.0:
-                #         pickup_time.append([time[driver][0][-1], min(route[-1], 79200)])
-                #         break
-        matched_rate_time[i*5+36000].append(matched_num/order_num_time[i*5+36000])
-    print(matched_rate_time)
-
+                for single_record in record:
+                    if single_record[-2] == 1.0:
+                        for second in range(i*5+36000, int(single_record[-1])):
+                            driver_no_cruising_time[driver][0].add(second)
+                        for second in range(int(single_record[-1]), int(record[-1][-1])):
+                            driver_no_cruising_time[driver][1].add(second)
+                        break
+        matched_rate_time[i*5+36000] = [matched_num/order_num_time[i*5+36000]]
+    for key in tqdm(matched_rate_time.keys()):
+        pickup_count = 0
+        delivery_count = 0
+        cruising_count = 0
+        for driver in driver_no_cruising_time.keys():
+            if key in driver_no_cruising_time[driver][0]:
+                pickup_count += 1
+            elif key in driver_no_cruising_time[driver][1]:
+                delivery_count += 1
+            else:
+                cruising_count += 1
+        matched_rate_time[key].append(pickup_count/2000)
+        matched_rate_time[key].append(delivery_count/2000)
+        matched_rate_time[key].append(cruising_count/2000)
     file = open('./data/simulator_metrics.json', 'w')
     file.write(json.dumps(matched_rate_time, indent=1))
+
+
+def generate_driver_heatmap():
+    heatMap = []
+    driver = pickle.load(open('./data/driver_info.pickle', 'rb')).head(2000)
+    for i in range(2000):
+        driver_coordinate = driver.loc[i, ['lng','lat']]
+        heatMap.append([driver_coordinate['lng'],driver_coordinate['lat']])
+    file = open('./data/headMap.json', 'w')
+    file.write(json.dumps(heatMap, indent=1))
+
+
+def generate_order_heatmap():
+    heatMap = []
+    order_info = pickle.load(open('./data/order.pickle', 'rb'))
+    for i in range(36000, 79200):
+        if i in order_info.keys():
+            for order in order_info[i]:
+                heatMap.append([order[3], order[2]])
+    file = open('./data/order_headMap.json', 'w')
+    file.write(json.dumps(heatMap, indent=1))
+
+
+def generate_driver_info_by_records(record_path):
+    heatMap = []
+    driver_coordinate = {}
+    records = pickle.load(open(record_path, 'rb'))
+    for record in tqdm(records):
+        for driver in record.keys():
+            if isinstance(record[driver][0], list):
+                driver_coordinate[driver] = [record[driver][-1][1], record[driver][-1][0]]
+            else:
+                driver_coordinate[driver] = [record[driver][1], record[driver][0]]
+    for value in driver_coordinate.values():
+        heatMap.append(value)
+    file = open('./data/driver_after_delivery_headMap.json', 'w')
+    file.write(json.dumps(heatMap, indent=1))
+
+
+def generate_order_info_by_records(record_path):
+    heatMap = []
+    order_origin_info = {}
+    order_info = pickle.load(open('./data/order.pickle', 'rb'))
+    for i in tqdm(range(36000, 79200)):
+        if i in order_info.keys():
+            for order in order_info[i]:
+                order_origin_info[order[0]] = [order[3], order[2]]
+    records = pickle.load(open(record_path, 'rb'))
+    finished_order = set()
+    for record in tqdm(records):
+        for driver in record.keys():
+            if isinstance(record[driver][0], list):
+                finished_order.add(record[driver][0][2])
+
+    for key in order_origin_info.keys():
+        if key in finished_order:
+            continue
+        heatMap.append(order_origin_info[key])
+    print(len(heatMap))
+    print(len(order_origin_info))
+    file = open('./data/order_after_delivery_cruising_headMap.json', 'w')
+    file.write(json.dumps(heatMap, indent=1))
+
+
+def extract_driver_record(record_path):
+    records = pickle.load(open(record_path, 'rb'))
+    driver_num = 5
+    driver_records = {}
+    driver_temp = {}
+    for id in range(driver_num):
+        driver_records[str(id)] = []
+        driver_temp[str(id)] = []
+    for record in tqdm(records):
+        for driver in record:
+            if isinstance(record[driver][0], list):
+                if driver in driver_records.keys():
+                    driver_records[driver].append({
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": driver_temp[driver]
+                        },
+                        "color": 'yellow'
+                    })
+                    single_record = record[driver]
+                    temp_coordinates = []
+                    for coor in single_record:
+                        temp_coordinates.append([coor[0], coor[1]])
+                        if coor[-2] == 1.0:
+                            driver_records[driver].append({
+                                "geometry": {
+                                    "type": "LineString",
+                                    "coordinates": temp_coordinates
+                                },
+                                "color": 'green'
+                            })
+                            temp_coordinates = [[coor[0], coor[1]]]
+                    driver_records[driver].append({
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": temp_coordinates
+                        },
+                        "color": 'red'
+                    })
+                    driver_temp[driver] = []
+            else:
+                if driver in driver_temp.keys():
+                    driver_temp[driver].append([record[driver][0], record[driver][1]])
+    print(driver_records)
+    file = open('./data/animation_car_line_test.json', 'w')
+    file.write(json.dumps(driver_records['0'], indent=1))
+
+
+def extract_one_driver_record(record_path):
+    records = pickle.load(open(record_path, 'rb'))
+    driver_records = {
+        '5': {
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': []
+            }
+        }
+    }
+    for record in tqdm(records):
+        for driver in record:
+            if isinstance(record[driver][0], list):
+                if driver in driver_records.keys():
+                    for coor in record[driver]:
+                        driver_records[driver]['geometry']['coordinates'].append([coor[0], coor[1]])
+            else:
+                if driver in driver_records.keys():
+                    driver_records[driver]['geometry']['coordinates'].append([record[driver][0], record[driver][1]])
+    print(driver_records)
+    file = open('./data/animation_car_line.json', 'w')
+    file.write(json.dumps(driver_records, indent=1))
 
 
 if __name__ == '__main__':
     record_path = './data/record/'
     record_file = os.listdir(record_path)
     print(record_file)
-    for file in record_file:
-        # generate_route_time(record_path+file)
-        calculate_metrics(record_path+file)
+    for file in record_file[2:3]:
+        generate_route_time(record_path+file)
+        # calculate_metrics(record_path+file)
+        # extract_one_driver_record(record_path+file)
+
+    # generate_driver_heatmap()
+    # generate_order_heatmap()
+    # record_path = './data/record/records_driver_num_2000_cruising.pickle'
+    # generate_order_info_by_records(record_path)
