@@ -304,14 +304,53 @@ def extract_one_driver_record(record_path):
     file.write(json.dumps(driver_records, indent=1))
 
 
+def calculate_metrics_passenger(record_path):
+    records = pickle.load(open(record_path, 'rb'))
+    order = pickle.load(open('./data/order.pickle', 'rb'))
+    order_to_time = {}
+    prematching_time = {}
+    for i in range(36000, 79200, 5):
+        for j in range(0, 5):
+            if (i + j) in order.keys():
+                for single_order in order[i+j]:
+                    order_to_time[single_order[0]] = i
+
+    prematching_time_temp_list = []
+    postmatching_time_temp_list = []
+    for i, time in enumerate(tqdm(records)):
+        if i % 360 == 0:
+            if prematching_time_temp_list == []:
+                prematching_time[i*5+36000] = [0, 0]
+            else:
+                prematching_time[i*5+36000] = [sum(prematching_time_temp_list)/len(prematching_time_temp_list)]
+                prematching_time[i*5+36000].append(sum(postmatching_time_temp_list)/len(postmatching_time_temp_list))
+            prematching_time_temp_list = []
+            postmatching_time_temp_list = []
+        for driver in time:
+            if isinstance(time[driver][0], list):
+                record = time[driver]
+                matching_time = record[0][-1]
+                pickup_end_time = 79200
+                for single_record in record:
+                    if single_record[-2] == 1:
+                        pickup_end_time = min(single_record[-1], pickup_end_time)
+                        break
+                prematching_time_temp_list.append(matching_time-order_to_time[record[0][2]])
+                postmatching_time_temp_list.append(pickup_end_time-matching_time)
+
+    file = open('./data/simulator_metrics_passenger.json', 'w')
+    file.write(json.dumps(prematching_time, indent=1))
+
+
 if __name__ == '__main__':
     record_path = './data/record/'
     record_file = os.listdir(record_path)
     print(record_file)
     for file in record_file[2:3]:
-        generate_route_time(record_path+file)
+        # generate_route_time(record_path+file)
         # calculate_metrics(record_path+file)
         # extract_one_driver_record(record_path+file)
+        calculate_metrics_passenger(record_path+file)
 
     # generate_driver_heatmap()
     # generate_order_heatmap()
