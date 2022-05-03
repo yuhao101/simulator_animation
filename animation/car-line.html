@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>MapVGL</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #map_container {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<div id="map_container"></div>
+<script src="//api.map.baidu.com/api?v=1.0&type=webgl&ak=Zyq6TjFQ1679hxUWSUhud4i03GThAEGI"></script>
+<script src="../static/common.js"></script>
+<script src="//mapv.baidu.com/build/mapv.min.js"></script>
+<script src="https://code.bdstatic.com/npm/mapvgl@1.0.0-beta.119/dist/mapvgl.min.js"></script>
+<script type="text/javascript" src="//bj.bcebos.com/v1/mapopen/github/BMapGLLib/TrackAnimation/src/TrackAnimation.min.js"></script>
+<script>
+  /* eslint-disable */
+  /* global BMapGL */
+
+  /* global mapv */
+
+  /* global mapvgl */
+
+  /* global initMap */
+
+  /* global whiteStyle */
+
+  var map = initMap({
+    tilt: 60,
+    heading: 0,
+    center: [-73.982316, 40.7730913],
+    zoom: 14,
+    // style: whiteStyle,
+    style: purpleStyle,
+    skyColors: [
+      // 地面颜色
+      'rgba(226, 237, 248, 0)',
+      // 天空颜色
+      'rgba(186, 211, 252, 1)'
+    ]
+  });
+
+  var view = new mapvgl.View({
+    map: map
+  });
+
+
+
+
+fetch('../data/animation_car_line.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+    data = [rs['5']];
+    console.log(data);
+  var lineLayer = new mapvgl.LineLayer({
+    width: 10,
+    color: 'rgba(55, 71, 226, 0.9)',
+    style: 'road',
+    enablePicked: true,
+    onClick: e => {
+      console.log(e);
+    }
+  });
+  view.addLayer(lineLayer);
+  lineLayer.setData(data);
+
+  var carlineLayer = new mapvgl.CarLineLayer({
+    url: '../static/car.gltf',
+    autoPlay: true,
+    scale: 200,
+  });
+
+  view.addLayer(carlineLayer);
+  carlineLayer.setData(data);
+    map.setDefaultCursor('default');
+
+
+  var coordinates = data[0].geometry.coordinates;
+  var point = [];
+  for (var i = 0; i < coordinates.length; i += 5) {
+    point.push(new BMapGL.Point(coordinates[i][0], coordinates[i][1]));
+  }
+
+  var pl = new BMapGL.Polyline(point, {strokeWeight: 1, strokeColor:'#f00000', strokeOpacity: 0});
+  var trackAni = new BMapGLLib.TrackAnimation(map, pl, {
+    overallView: true,
+    tilt: 70,
+    heading: 130,
+    zoom: 15,
+    duration: 20000,
+    delay: 100
+  });
+  trackAni.start();
+});
+
+
+
+
+
+
+</script>
+</body>
+</html>

@@ -18,8 +18,85 @@
             height: 100%;
         }
     </style>
+    <style>
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #map_container {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+            }
+            .panel {
+                position: absolute;
+                z-index: 99;
+                top: 10px;
+                right: 10px;
+                display: flex;
+                flex-direction: column;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                background: #004E63;
+                width: 400px;
+                height: 300px;
+            }
+            .panel label {
+                font-size: 14px;
+                line-height: 2;
+            }
+            .panel .show {
+                display: none;
+                /*width: 4em;*/
+                padding: 5px 8px;
+                border: 1px solid #ccc;
+                font-size: 14px;
+                color: rgba(84, 163, 223, 0.98);
+                border-radius: 6px;
+                background: #004E63;
+                cursor: pointer;
+                width: 80px;
+            }
+            .panel.hide {
+                visibility: hidden;
+            }
+            .panel.hide .show {
+                display: inline-block;
+                visibility: visible;
+            }
+            .panel .close {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                font-size: 14px;
+                color: rgba(84, 163, 223, 0.98);
+                cursor: pointer;
+            }
+            .create-button {
+                margin: 6px 0;
+            }
+        </style>
 </head>
 <body>
+<div class="panel">
+            <span class="show" onclick="togglePanel()">show panel</span>
+            <span class="close" onclick="togglePanel()">collapse</span>
+            <label style="color:white; font-size: 16px">Different line color meaning</label>
+            <p style="font-size: 15px;margin:2px; color:yellow">---- cruising</p>
+            <p style="font-size: 15px;margin:2px; color:green">---- Pickup</p>
+            <p style="font-size: 15px;margin:2px; color:red">---- Delivery</p>
+            <label  style="color:white; font-size: 16px">Different evaluation metrics</label>
+            <p id="time" style="font-size: 16px;margin:1px;color:white">Time: 0</p>
+            <p id="matching rate" style="font-size: 14px;margin:2px;color:white">Matching Rate: 0</p>
+            <p id="pickup ratio" style="font-size: 14px;margin:2px;color:white">Pickup Ratio: 0</p>
+            <p id="delivery ratio" style="font-size: 14px;margin:2px;color:white">Delivery Ratio: 0</p>
+            <p id="idle ratio" style="font-size: 14px;margin:2px;color:white">Idle Ratio: 0</p>
+
+  </div>
 
     <div id="map"></div>
     <canvas id="canvas"></canvas>
@@ -177,21 +254,19 @@
             }]
         });
 
-        $.get('../data/simulator_test.json', function (rs) {
+        $.get('../data/simulator_animation.json', function (rs) {
 
-            var data = [];
             var timeData = [];
             var time_base = 36000;
 
             rs = rs.data;
-            for (var i = 0; i < 2000; i++) {
+            for (var i = 0; i < 10000; i++) {
                 var time = rs[i].time_list;
                 var traj = rs[i].traj_list;
                 var coordinates = [];
                 for (j = 0; j < time.length; j += 1) {
-                    console.log([traj[j][1], traj[j][0]]);
                     coordinates.push([traj[j][1], traj[j][0]]);
-                    if(rs[i].type_list[j] === 1.0){
+                    if(rs[i].type === 1.0){
                         timeData.push({
                         fillStyle: 'red',
                         geometry: {
@@ -202,9 +277,20 @@
                         time: time[j] - time_base
                     })
                     }
-                    else {
+                    else if(rs[i].type === 2.0){
                         timeData.push({
                             fillStyle: 'green',
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [traj[j][1], traj[j][0]]
+                            },
+                            count: 1,
+                            time: time[j] - time_base
+                        })
+                    }
+                    else{
+                        timeData.push({
+                            fillStyle: 'yellow',
                             geometry: {
                                 type: 'Point',
                                 coordinates: [traj[j][1], traj[j][0]]
@@ -223,13 +309,54 @@
                 size: 2,
                 animation: {
 
-                    trails: 10,
+                    trails: 50,
                     duration: 50,
                 },
                 draw: 'simple'
             };
             var mapvLayer = new mapv.baiduMapLayer(map, dataSet, options);
         });
+          var executeTime = 100;
+    function sToHms(s){
+      s = Math.floor(s);  //如果输入的是浮点数，则舍弃小数位
+
+      var h = Math.floor(s/3600);  //计算得出小时数
+      if(h<10){  //调整为两位数的格式
+        h = '0'+h;
+      }
+
+      var m = Math.floor(s/60-h*60);  //计算得出分钟数
+      if(m<10){  //调整为两位数的格式
+        m = '0'+m;
+      }
+
+      var s = s%60;  //计算得出剩下的秒数
+      if(s<10){  //调整为两位数的格式
+        s = '0'+s;
+      }
+
+      return h+':'+m+':'+s;  //最后连接成字符串并返回
+    }
+  fetch('../data/simulator_metrics.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+      cTime = document.getElementById('time');
+      p1 = document.getElementById('matching rate');
+      p2 = document.getElementById('pickup ratio');
+      p3 = document.getElementById('delivery ratio');
+      p4 = document.getElementById('idle ratio');
+      for (i = 1; i < 8640; i++) {
+          (function (num) {
+              setTimeout(function () {
+                  cTime.innerHTML = 'Time: ' + sToHms(num * 5 + 36000);
+                  p1.innerHTML = 'Matching Rate: ' + rs[num * 5 + 36000][0];
+                  p2.innerHTML = 'Pickup Ratio: ' + rs[num * 5 + 36000][1];
+                  p3.innerHTML = 'Delivery Ratio: ' + rs[num * 5 + 36000][2];
+                  p4.innerHTML = 'Idle Ratio: ' + rs[num * 5 + 36000][3];
+              }, num * (1000/(8640/executeTime)));
+          })(i);
+      }
+  });
         </script>
 	
 </body>

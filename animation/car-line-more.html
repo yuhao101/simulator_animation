@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>MapVGL</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #map_container {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<div id="map_container"></div>
+<script src="//api.map.baidu.com/api?v=1.0&type=webgl&ak=Zyq6TjFQ1679hxUWSUhud4i03GThAEGI"></script>
+<script src="../static/common.js"></script>
+<script src="//mapv.baidu.com/build/mapv.min.js"></script>
+<script src="https://code.bdstatic.com/npm/mapvgl@1.0.0-beta.119/dist/mapvgl.min.js"></script>
+<script>
+  /* eslint-disable */
+  /* global BMapGL */
+
+  /* global mapv */
+
+  /* global mapvgl */
+
+  /* global initMap */
+
+  /* global whiteStyle */
+
+  var map = initMap({
+    tilt: 60,
+    heading: 0,
+    // center: [116.308528,40.050574],
+    center: [-73.982316, 40.7730913],
+    // center: [106.521831,29.571811],
+    zoom: 14,
+    // style: whiteStyle,
+    displayOptions: {
+      poi: false
+    },
+    style: purpleStyle,
+    skyColors: [
+      // 地面颜色
+      'rgba(226, 237, 248, 0)',
+      // 天空颜色
+      'rgba(186, 211, 252, 1)'
+    ]
+  });
+
+  var view = new mapvgl.View({
+    map: map
+  });
+
+
+  fetch('../data/simulator_animation.json').then(rs => {
+    return rs.json();
+  }).then(rs => {
+    rs = rs.data;
+    var data = [];
+    var length = 1000;
+    for (var i = 1; i < length; i++) {
+      var traj_list = rs[i].traj_list;
+      var traj = [];
+
+      for (var j = 0; j < traj_list.length; j++) {
+        traj.push([
+          traj_list[j][1],
+          traj_list[j][0],
+        ]);
+      }
+
+      data.push({
+        geometry: {
+          "type": "LineString",
+          "coordinates": traj,
+        }
+      });
+    }
+    console.log('test');
+    console.log(data);
+    console.log(typeof(data));
+    // var data = [
+    // {geometry: {"type":"LineString","coordinates":[[116.308528,40.050574],[116.307378,40.052314],[116.306175,40.054274],[116.30515,40.056608],[116.304809,40.058955],[116.304055,40.060611]]}},
+    // {geometry: {"type":"LineString","coordinates":[[116.304414,40.058458],[116.301845,40.058113],[116.299689,40.057795],[116.298485,40.05745],[116.297245,40.056911],[116.2957,40.05698],[116.294964,40.05676]]}},
+    //
+    // ];
+    // data.push({
+    //   geometry: {
+    //     "type": "LineString",
+    //     "coordinates": [[116.304414,40.058458],[116.304414,40.058458]],
+    //   }
+    // });
+    console.log(data);
+    var carlineLayer = new mapvgl.CarLineLayer({
+    url: '../static/car.gltf',
+    autoPlay: true,
+    step: 0.2,
+    scale: 100,
+    });
+    view.addLayer(carlineLayer);
+    carlineLayer.setData(data);
+    map.setDefaultCursor('default');
+
+  });
+
+
+
+</script>
+</body>
+</html>

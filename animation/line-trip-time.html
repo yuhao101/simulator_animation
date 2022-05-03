@@ -3,31 +3,104 @@
 <head>
   <meta charset="utf-8" >
   <title>BMapGL</title>
-  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" >
-  <style type="text/css">
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      padding: 0;
-      margin: 0;
-    }
-    #map_container {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-    }
+<!--  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" >-->
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #map_container {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+            }
+            .panel {
+                position: absolute;
+                z-index: 99;
+                top: 10px;
+                right: 10px;
+                display: flex;
+                flex-direction: column;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                background: #004E63;
+                width: 400px;
+                height: 380px;
+            }
+            .panel label {
+                font-size: 14px;
+                line-height: 2;
+            }
+            .panel .show {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                display: none;
+                padding: 5px 8px;
+                border: 1px solid #ccc;
+                font-size: 14px;
+                color: rgba(84, 163, 223, 0.98);
+                border-radius: 6px;
+                background: #004E63;
+                cursor: pointer;
+                width: 80px;
+            }
+            .panel.hide {
+                visibility: hidden;
+            }
+            .panel.hide .show {
+                display: inline-block;
+                visibility: visible;
+                right: 10px;
 
-  </style>
+            }
+            .panel .close {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                font-size: 14px;
+                color: rgba(84, 163, 223, 0.98);
+                cursor: pointer;
+            }
+            .create-button {
+                margin: 6px 0;
+            }
+        </style>
 
   <script type="text/javascript" src="//api.map.baidu.com/api?v=1.0&type=webgl&ak=Zyq6TjFQ1679hxUWSUhud4i03GThAEGI"></script>
   <script type="text/javascript" src="../static/common.js"></script>
   <script type="text/javascript" src="https://code.bdstatic.com/npm/mapvgl@1.0.0-beta.119/dist/mapvgl.min.js"></script>
+  <script src="//mapv.baidu.com/build/mapv.min.js"></script>
 
 </head>
 <body>
+<div class="panel">
+            <span class="show" onclick="togglePanel()">show panel</span>
+            <span class="close" onclick="togglePanel()">collapse</span>
+            <label style="color:white; font-size: 16px">Different line color meaning</label>
+            <p style="font-size: 15px;margin:2px; color:yellow">---- cruising</p>
+            <p style="font-size: 15px;margin:2px; color:green">---- Pickup</p>
+            <p style="font-size: 15px;margin:2px; color:red">---- Delivery</p>
+            <label  style="color:white; font-size: 16px">Driver evaluation metrics</label>
+            <p id="time" style="font-size: 16px;margin:1px;color:white">Time: 0</p>
+            <p id="matching rate" style="font-size: 14px;margin:2px;color:white">Matching Rate: 0</p>
+            <p id="pickup ratio" style="font-size: 14px;margin:2px;color:white">Pickup Ratio: 0</p>
+            <p id="delivery ratio" style="font-size: 14px;margin:2px;color:white">Delivery Ratio: 0</p>
+            <p id="idle ratio" style="font-size: 14px;margin:2px;color:white">Idle Ratio: 0</p>
+            <label  style="color:white; font-size: 16px">Passenger evaluation metrics</label>
+            <p id="time2" style="font-size: 16px;margin:1px;color:white">Time: 0</p>
+            <p id="passenger waiting time" style="font-size: 14px;margin:2px;color:white">Passenger waiting time: 0</p>
+            <p id="passenger pickup time" style="font-size: 14px;margin:2px;color:white">Passenger pickup time: 0</p>
 
-<div id="map_container"></div>
+  </div>
+<div id="map_container">
+</div>
 
 
 <script>
@@ -35,31 +108,31 @@
   /* global BMapGL */
 
 
-  var map = initMap({
-        tilt: 60,
-        heading: 0,
-        center: [-73.982316, 40.7730913],
-        zoom: 13,
-    });
+  // var map = initMap({
+  //   tilt: 60,
+  //   heading: 0,
+  //   center: [-73.982316, 40.7730913],
+  //   zoom: 13,
+  // });
 
   // car
-  // var map = initMap({
-  //         tilt: 60,
-  //         heading: 0,
-  //         center: [-73.982316, 40.7730913],
-  //         zoom: 14,
-  //         // style: whiteStyle,
-  //         displayOptions: {
-  //             poi: false
-  //         },
-  //         style: purpleStyle,
-  //         skyColors: [
-  //             // 地面颜色
-  //             'rgba(226, 237, 248, 0)',
-  //             // 天空颜色
-  //             'rgba(186, 211, 252, 1)'
-  //         ]
-  //     });
+  var map = initMap({
+          tilt: 60,
+          heading: 0,
+          center: [-73.982316, 40.7730913],
+          zoom: 14,
+          style: purpleStyle,
+          displayOptions: {
+              poi: false
+          },
+
+          skyColors: [
+              // 地面颜色
+              'rgba(226, 237, 248, 0)',
+              // 天空颜色
+              'rgba(186, 211, 252, 1)'
+          ]
+      });
   var view = new mapvgl.View({
     map: map
   });
@@ -71,13 +144,14 @@
   }).then(function(rs) {
     rs = rs.data;
     var data = [];
-    for (var i = 0; i < 100; i++) {
+    var length = 500;
+    for (var i = 0; i < length; i++) {
       var type = rs[i].type;
-      console.log(type);
       var traj_list = rs[i].traj_list;
       var time_list = rs[i].time_list;
       var traj = [];
       var timeArr = [];
+
       for (var j = 0; j < time_list.length; j++) {
         timeArr.push(time_list[j]);
         traj.push([
@@ -97,37 +171,114 @@
         }
       });
       }
+      else if(type === 2) {
+          data.push({
+              color: 'green',
+              time: timeArr,
+              geometry: {
+                  type: 'LineString',
+                  coordinates: traj
+              }
+          });
+      }
       else{
-        data.push({
-        color: 'green',
-        time: timeArr,
-        geometry: {
-          type: 'LineString',
-          coordinates: traj
-        }
-      });
-    }
+          data.push({
+              color: 'yellow',
+              time: timeArr,
+              geometry: {
+                  type: 'LineString',
+                  coordinates: traj
+              }
+          });
+          }
   }
-
   var lineLayer = new mapvgl.LineTripLayer({
-    step: 1,
+    step: 5.5,
     trailLength: 500,
     startTime: 0,
     endTime: 43200,
   });
   view.addLayer(lineLayer);
   lineLayer.setData(data);
-  // var carlineLayer = new mapvgl.CarLineLayer({
-  //           url: '../static/car.gltf',
-  //           autoPlay: true,
-  //           step: 4,
-  //           scale: 10,
-  //       });
-  //
-  // view.addLayer(carlineLayer);
-  // carlineLayer.setData(data);
+
 });
 
+  var executeTime = 100;
+    function sToHms(s){
+      s = Math.floor(s);  //如果输入的是浮点数，则舍弃小数位
+
+      var h = Math.floor(s/3600);  //计算得出小时数
+      if(h<10){  //调整为两位数的格式
+        h = '0'+h;
+      }
+
+      var m = Math.floor(s/60-h*60);  //计算得出分钟数
+      if(m<10){  //调整为两位数的格式
+        m = '0'+m;
+      }
+
+      var s = s%60;  //计算得出剩下的秒数
+      if(s<10){  //调整为两位数的格式
+        s = '0'+s;
+      }
+
+      return h+':'+m+':'+s;  //最后连接成字符串并返回
+    }
+  fetch('../data/simulator_metrics.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+      cTime = document.getElementById('time');
+      p1 = document.getElementById('matching rate');
+      p2 = document.getElementById('pickup ratio');
+      p3 = document.getElementById('delivery ratio');
+      p4 = document.getElementById('idle ratio');
+      for (i = 1; i < 8640; i++) {
+          (function (num) {
+              setTimeout(function () {
+                  cTime.innerHTML = 'Time: ' + sToHms(num * 5 + 36000);
+                  p1.innerHTML = 'Matching Rate: ' + rs[num * 5 + 36000][0];
+                  p2.innerHTML = 'Pickup Ratio: ' + rs[num * 5 + 36000][1];
+                  p3.innerHTML = 'Delivery Ratio: ' + rs[num * 5 + 36000][2];
+                  p4.innerHTML = 'Idle Ratio: ' + rs[num * 5 + 36000][3];
+              }, num * (1000/(8640/executeTime)));
+          })(i);
+      }
+  });
+  fetch('../data/simulator_metrics_passenger.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+      cTime2 = document.getElementById('time2');
+      p5 = document.getElementById('passenger waiting time');
+      p6 = document.getElementById('passenger pickup time');
+      for (i = 0; i < 8640; i +=360) {
+          (function (num) {
+              setTimeout(function () {
+                  cTime2.innerHTML = 'Time: ' + sToHms(num * 5 + 36000);
+                  p5.innerHTML = 'Passenger waiting time: ' + rs[num * 5 + 36000][0];
+                  p6.innerHTML = 'Passenger pickup time: ' + rs[num * 5 + 36000][1];
+              }, num * (1000/(8640/executeTime)));
+          })(i);
+      }
+  });
+  // for (var k =0; k < executeTime;k++){
+  //   sleep(1000);
+  //   p1.innerHTML=k;
+  // }
+
+
+
+
+function togglePanel() {
+                let classList = document.querySelector('.panel').classList;
+                if (classList.contains('hide')) {
+                    classList.remove('hide');
+                    classList.add('show');
+                } else {
+                    classList.remove('show');
+                    classList.add('hide');
+                }
+            }
 </script>
+
 </body>
 </html>
