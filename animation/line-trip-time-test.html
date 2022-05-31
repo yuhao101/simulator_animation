@@ -84,9 +84,9 @@
             <span class="show" onclick="togglePanel()">show panel</span>
             <span class="close" onclick="togglePanel()">collapse</span>
             <label style="color:white; font-size: 16px">Different line color</label>
-            <p style="font-size: 15px;margin:2px; color:yellow">---- cruising</p>
-            <p style="font-size: 15px;margin:2px; color:green">---- Pickup</p>
-            <p style="font-size: 15px;margin:2px; color:red">---- Delivery</p>
+            <span style="font-size: 15px;margin:2px; color:yellow; cursor:pointer" onclick="Cruising()">---- Cruising</span>
+            <p style="font-size: 15px;margin:2px; color:green; cursor:pointer" onclick="Pickup()">---- Pickup</p>
+            <p style="font-size: 15px;margin:2px; color:red; cursor:pointer" onclick="Delivery()">---- Delivery</p>
             <label  id="time" style="color:white; font-size: 18px">Time: 0</label>
             <label  style="color:white; font-size: 16px">Driver evaluation metrics</label>
             <p id="matching rate" style="font-size: 14px;margin:2px;color:white">Matching Rate: 0</p>
@@ -138,14 +138,32 @@
   });
 
   var timeOffset = 36000;
-
-  fetch('../data/simulator_animation.json').then(function(rs) {
+    var cruisingLayer = new mapvgl.LineTripLayer({
+    step: 5.5,
+    trailLength: 500,
+    startTime: 0,
+    endTime: 43200,
+  });
+  var pickupLayer = new mapvgl.LineTripLayer({
+    step: 5.5,
+    trailLength: 500,
+    startTime: 0,
+    endTime: 43200,
+  });
+  var deliveryLayer = new mapvgl.LineTripLayer({
+    step: 5.5,
+    trailLength: 500,
+    startTime: 0,
+    endTime: 43200,
+  });
+fetch('../data/simulator_animation_1000.json').then(function(rs) {
     return rs.json();
   }).then(function(rs) {
     rs = rs.data;
-    var data = [];
-    var length = 10000;
-    for (var i = 0; i < length; i++) {
+    var cruisingdata = [];
+    var pickupdata = [];
+    var deliverydata = [];
+    for (var i = 0; i < rs.length; i++) {
       var type = rs[i].type;
       var traj_list = rs[i].traj_list;
       var time_list = rs[i].time_list;
@@ -162,7 +180,7 @@
         ]);
       }
       if (type === 1) {
-        data.push({
+        deliverydata.push({
         color: 'red',
         time: timeArr,
         geometry: {
@@ -172,7 +190,7 @@
       });
       }
       else if(type === 2) {
-          data.push({
+          pickupdata.push({
               color: 'green',
               time: timeArr,
               geometry: {
@@ -182,7 +200,7 @@
           });
       }
       else{
-          data.push({
+          cruisingdata.push({
               color: 'yellow',
               time: timeArr,
               geometry: {
@@ -192,18 +210,21 @@
           });
           }
   }
-  var lineLayer = new mapvgl.LineTripLayer({
-    step: 5.5,
-    trailLength: 500,
-    startTime: 0,
-    endTime: 43200,
-  });
-  view.addLayer(lineLayer);
-  lineLayer.setData(data);
+  view.addLayer(cruisingLayer);
+  view.addLayer(pickupLayer);
+  view.addLayer(deliveryLayer);
+  cruisingLayer.setData(cruisingdata);
+  pickupLayer.setData(pickupdata);
+  deliveryLayer.setData(deliverydata);
+  view.hideLayer(cruisingLayer);
+  view.hideLayer(pickupLayer);
+  view.hideLayer(deliveryLayer)
 
 });
 
+
   var executeTime = 70;
+  var current_time = 0;
     function sToHms(s){
       s = Math.floor(s);  //如果输入的是浮点数，则舍弃小数位
 
@@ -235,6 +256,7 @@
       for (i = 1; i < 8640; i++) {
           (function (num) {
               setTimeout(function () {
+                  current_time = num * 5 + 36000;
                   cTime.innerHTML = 'Time: ' + sToHms(num * 5 + 36000);
                   p1.innerHTML = 'Matching Rate: ' + rs[num * 5 + 36000][0].toFixed(3);
                   p2.innerHTML = 'Pickup Ratio: ' + rs[num * 5 + 36000][1];
@@ -263,9 +285,43 @@
   //   p1.innerHTML=k;
   // }
 
+  var cruisingJudge = false;
+  var pickupJudge = false;
+  var deliveryJudge = false;
+function Cruising() {
+    // view.removeAllLayers();
+    if (!cruisingJudge){
+        view.showLayer(cruisingLayer);
+        cruisingJudge = true;
+    }
+    else{
+        view.hideLayer(cruisingLayer);
+        cruisingJudge = false;
+    }
 
+}
+function Pickup() {
+   if (!pickupJudge){
+        view.showLayer(pickupLayer);
+        pickupJudge = true;
+    }
+    else{
+        view.hideLayer(pickupLayer);
+        pickupJudge = false;
+    }
 
-
+}
+function Delivery() {
+    if (!deliveryJudge){
+            view.showLayer(deliveryLayer);
+            deliveryJudge = true;
+        }
+        else{
+            view.hideLayer(deliveryLayer);
+            deliveryJudge = false;
+        }
+}
+  
 function togglePanel() {
                 let classList = document.querySelector('.panel').classList;
                 if (classList.contains('hide')) {
@@ -276,6 +332,7 @@ function togglePanel() {
                     classList.add('hide');
                 }
             }
+
 </script>
 
 </body>

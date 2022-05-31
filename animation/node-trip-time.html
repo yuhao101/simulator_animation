@@ -43,7 +43,7 @@
                 border-radius: 6px;
                 background: #004E63;
                 width: 400px;
-                height: 300px;
+                height: 380px;
             }
             .panel label {
                 font-size: 14px;
@@ -89,12 +89,15 @@
             <p style="font-size: 15px;margin:2px; color:yellow">---- cruising</p>
             <p style="font-size: 15px;margin:2px; color:green">---- Pickup</p>
             <p style="font-size: 15px;margin:2px; color:red">---- Delivery</p>
-            <label  style="color:white; font-size: 16px">Different evaluation metrics</label>
-            <p id="time" style="font-size: 16px;margin:1px;color:white">Time: 0</p>
+            <label  id="time" style="color:white; font-size: 18px">Time: 0</label>
+            <label  style="color:white; font-size: 16px">Driver evaluation metrics</label>
             <p id="matching rate" style="font-size: 14px;margin:2px;color:white">Matching Rate: 0</p>
             <p id="pickup ratio" style="font-size: 14px;margin:2px;color:white">Pickup Ratio: 0</p>
             <p id="delivery ratio" style="font-size: 14px;margin:2px;color:white">Delivery Ratio: 0</p>
             <p id="idle ratio" style="font-size: 14px;margin:2px;color:white">Idle Ratio: 0</p>
+            <label  style="color:white; font-size: 16px">Passenger evaluation metrics</label>
+            <p id="passenger waiting time" style="font-size: 14px;margin:2px;color:white">Passenger waiting time: 0</p>
+            <p id="passenger pickup time" style="font-size: 14px;margin:2px;color:white">Passenger pickup time: 0</p>
 
   </div>
 
@@ -111,7 +114,7 @@
         var map = new BMap.Map("map", {
             enableMapClick: false
         });    // 创建Map实例
-        map.centerAndZoom(new BMap.Point(-73.982316, 40.7730913), 12);  // 初始化地图,设置中心点坐标和地图级别
+        map.centerAndZoom(new BMap.Point(-73.952316, 40.7530913), 12);  // 初始化地图,设置中心点坐标和地图级别
         map.enableScrollWheelZoom(true); // 开启鼠标滚轮缩放
 
         // 地图自定义样式
@@ -316,7 +319,7 @@
             };
             var mapvLayer = new mapv.baiduMapLayer(map, dataSet, options);
         });
-          var executeTime = 100;
+          var executeTime = 70;
     function sToHms(s){
       s = Math.floor(s);  //如果输入的是浮点数，则舍弃小数位
 
@@ -353,6 +356,20 @@
                   p2.innerHTML = 'Pickup Ratio: ' + rs[num * 5 + 36000][1];
                   p3.innerHTML = 'Delivery Ratio: ' + rs[num * 5 + 36000][2];
                   p4.innerHTML = 'Idle Ratio: ' + rs[num * 5 + 36000][3];
+              }, num * (1000/(8640/executeTime)));
+          })(i);
+      }
+  });
+  fetch('../data/simulator_metrics_passenger.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+      p5 = document.getElementById('passenger waiting time');
+      p6 = document.getElementById('passenger pickup time');
+      for (i = 0; i < 8640; i ++) {
+          (function (num) {
+              setTimeout(function () {
+                  p5.innerHTML = 'Passenger waiting time: ' + rs[num * 5 + 36000][0].toFixed(3);
+                  p6.innerHTML = 'Passenger pickup time: ' + rs[num * 5 + 36000][1].toFixed(3);
               }, num * (1000/(8640/executeTime)));
           })(i);
       }

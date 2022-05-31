@@ -76,7 +76,11 @@ def generate_route_time(record_path):
     routes = {}
     routes['data'] = []
     driver_cruising = {}
+    length = 0
     for record in tqdm(records):
+        length += 1
+        if length == 100:
+            break
         for key in record:
             driver = record[key]
             if isinstance(driver[0], list):
@@ -120,7 +124,7 @@ def generate_route_time(record_path):
                 else:
                     driver_cruising[key][0].append(driver[-1])
                     driver_cruising[key][1].append([driver[0], driver[1]])
-    file = open('./data/simulator_animation.json', 'w')
+    file = open('./data/simulator_animation_100.json', 'w')
     file.write(json.dumps(routes, indent=1))
 
 
@@ -318,14 +322,27 @@ def calculate_metrics_passenger(record_path):
     prematching_time_temp_list = []
     postmatching_time_temp_list = []
     for i, time in enumerate(tqdm(records)):
-        if i % 360 == 0:
-            if prematching_time_temp_list == []:
-                prematching_time[i*5+36000] = [0, 0]
+        temp_pre = []
+        temp_post = []
+        if prematching_time_temp_list == []:
+            prematching_time[i*5+36000] = [0, 0]
+        else:
+            if len(prematching_time_temp_list) < 361:
+                if (sum(len(i) for i in prematching_time_temp_list)) == 0:
+                    prematching_time[i * 5 + 36000] = [0]
+                else:
+                    prematching_time[i*5+36000] = [sum(sum(i) for i in prematching_time_temp_list)/(sum(len(i) for i in prematching_time_temp_list))]
+                if (sum(len(i) for i in postmatching_time_temp_list)) == 0:
+                    prematching_time[i * 5 + 36000].append(0)
+                else:
+                    prematching_time[i*5+36000].append(sum(sum(i) for i in postmatching_time_temp_list)/(sum(len(i) for i in postmatching_time_temp_list)))
             else:
-                prematching_time[i*5+36000] = [sum(prematching_time_temp_list)/len(prematching_time_temp_list)]
-                prematching_time[i*5+36000].append(sum(postmatching_time_temp_list)/len(postmatching_time_temp_list))
-            prematching_time_temp_list = []
-            postmatching_time_temp_list = []
+                prematching_time[i * 5 + 36000] = [
+                    sum(sum(i) for i in prematching_time_temp_list[1:]) / (sum(len(i) for i in prematching_time_temp_list[1:]))]
+                prematching_time[i * 5 + 36000].append(sum(sum(i) for i in postmatching_time_temp_list[1:]) / (
+                    sum(len(i) for i in postmatching_time_temp_list[1:])))
+                prematching_time_temp_list = prematching_time_temp_list[1:]
+                postmatching_time_temp_list = postmatching_time_temp_list[1:]
         for driver in time:
             if isinstance(time[driver][0], list):
                 record = time[driver]
@@ -335,8 +352,10 @@ def calculate_metrics_passenger(record_path):
                     if single_record[-2] == 1:
                         pickup_end_time = min(single_record[-1], pickup_end_time)
                         break
-                prematching_time_temp_list.append(matching_time-order_to_time[record[0][2]])
-                postmatching_time_temp_list.append(pickup_end_time-matching_time)
+                temp_pre.append(matching_time - order_to_time[record[0][2]])
+                temp_post.append(pickup_end_time - matching_time)
+        prematching_time_temp_list.append(temp_pre)
+        postmatching_time_temp_list.append(temp_post)
 
     file = open('./data/simulator_metrics_passenger.json', 'w')
     file.write(json.dumps(prematching_time, indent=1))
@@ -347,10 +366,10 @@ if __name__ == '__main__':
     record_file = os.listdir(record_path)
     print(record_file)
     for file in record_file[2:3]:
-        # generate_route_time(record_path+file)
+        generate_route_time(record_path+file)
         # calculate_metrics(record_path+file)
         # extract_one_driver_record(record_path+file)
-        calculate_metrics_passenger(record_path+file)
+        # calculate_metrics_passenger(record_path+file)
 
     # generate_driver_heatmap()
     # generate_order_heatmap()

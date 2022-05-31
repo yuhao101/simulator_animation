@@ -1,0 +1,472 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Manhattan Vehicle Control Big Data System</title>
+<!--设置是否为缩放模式 -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 新 Bootstrap 核心 CSS 文件 --> 
+<link rel="stylesheet" type="text/css" href="https://apps.bdimg.com/libs/bootstrap/3.3.4/css/bootstrap.css">
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 --> 
+<script src="js/jquery.min.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 --> 
+<script src="js/bootstrap.min.js"></script>
+<!--echarts JS-->
+<script src="js/echarts.min.js"></script>
+<!-- 轮播swiper文件 -->
+<link rel="stylesheet" type="text/css" href="css/swiper.min.css">
+<script src="js/swiper.min.js"></script>
+<!--界面样式-->
+<script src="js/visual.js"></script>
+<script src="js/china.js"></script>
+<script src="js/chartMap.js"></script>
+<link rel="stylesheet" type="text/css" href="css/visual.css">
+<script type="text/javascript" src="//api.map.baidu.com/api?v=1.0&type=webgl&ak=Zyq6TjFQ1679hxUWSUhud4i03GThAEGI"></script>
+  <script type="text/javascript" src="../static/common.js"></script>
+  <script type="text/javascript" src="https://code.bdstatic.com/npm/mapvgl@1.0.0-beta.119/dist/mapvgl.min.js"></script>
+  <script src="//mapv.baidu.com/build/mapv.min.js"></script>
+</head>
+<body class="ksh">
+	<div id="load">
+		<div class="load_img"><!-- 加载动画 -->
+			<img class="jzxz1" src="images/jzxz1.png">
+			<img class="jzxz2" src="images/jzxz2.png">
+		</div>
+	</div>
+	<div class="head_top" style="cursor:pointer;">
+		<img class="img-responsive" src="images/jcdsj_logo.png">
+		<p style="font-size: 30px; font-weight: bolder">Manhattan Vehicle Control Big Data System</p>
+	</div>
+	<div class="visual">
+		<div class="visual_left">
+			<div class="visual_box">
+				<div class="visual_title">
+					<span>Finished orders during different period</span>
+					<img src="images/ksh33.png">
+				</div>
+				<div class="visual_chart" id="main1">
+					
+				</div>
+			</div>
+			<div class="visual_box">
+				<div class="visual_title">
+					<span>Evaluation Matrics</span>
+					<img src="images/ksh33.png">
+				</div>
+				<div class="visual_chart" id="main2">
+					
+				</div>
+			</div>
+			<div class="visual_box">
+				<div class="visual_title">
+					<span>Transportation</span>
+					<img src="images/ksh33.png">
+				</div>
+				<div class="visual_chart sfzcll">
+					<a>Transportation</a>
+					<a>passenger</a>
+					<a>carpool passenger</a>
+					<div class="sfzcll_pos_box">
+						<div class="sfzcll_box">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<label><img src="images/ksh35.png">Taxi</label>
+							<div class="sfzcll_smallBk">
+								<div class="ygl">
+									<span>4347.2万</span>人
+								</div>
+							</div>
+							<div class="sfzcll_smallBk">
+								<div class="ygh">
+									<span>4347.2万</span>人
+								</div>
+							</div>
+							<div class="clear"></div>
+						</div>
+						<div class="sfzcll_box">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<label><img src="images/ksh35.png">Taxi</label>
+							<div class="sfzcll_smallBk">
+								<div class="ygl">
+									<span>4347.2万</span>人
+								</div>
+							</div>
+							<div class="sfzcll_smallBk">
+								<div class="ygh">
+									<span>4347.2万</span>人
+								</div>
+							</div>
+							<div class="clear"></div>
+						</div>
+						<div class="sfzcll_box">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<img class="sfzcll_bkJk" src="images/ksh34.png">
+							<label><img src="images/ksh35.png">Taxi</label>
+							<div class="sfzcll_smallBk">
+								<div class="ygl">
+									<span>4347.2万</span>人
+								</div>
+							</div>
+							<div class="sfzcll_smallBk">
+								<div class="ygh">
+									<span>4347.2万</span>人
+								</div>
+							</div>
+							<div class="clear"></div>
+						</div>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+		<div class="visual_con">
+			<div class="visual_conTop">
+				<div class="visual_conTop_box visual_conTop1">
+					<div>
+						<h3>Cancelled order</h3>
+						<p id="passenger waiting time8">0</p>
+					</div>
+				</div>
+				<div class="visual_conTop_box visual_conTop2">
+					<div>
+						<h3>Passenger pickup time</h3>
+						<p id="passenger pickup time">0</p>
+					</div>
+				</div>
+				<div class="visual_conTop_box visual_conTop1">
+					<div>
+						<h3>Finished order</h3>
+						<p>0</p>
+
+					</div>
+				</div>
+				<div class="visual_conTop_box visual_conTop2">
+					<div>
+						<h3>Passenger waiting time</h3>
+						<p id="passenger waiting time">0</p>
+					</div>
+				</div>
+				<div class="clear"></div>
+			</div>
+			<div class="visual_conBot">
+				<img class="visual_conBot_l" src="images/ksh42.png">
+				<img class="visual_conBot_2" src="images/ksh43.png">
+				<img class="visual_conBot_3" src="images/ksh44.png">
+				<img class="visual_conBot_4" src="images/ksh45.png">
+				<div class="visual_chart_text">
+					<h1>Travel Service</h1>
+					<h2>Traffic big data analysis platform</h2>
+				</div>
+				<div class="visual_chart" id="map_container" onclick="window.location.href='./line-trip-time-test.html'">
+				</div>
+				<div class="visual_conBot_bot">
+					<div class="visualSssf_left" style="text-align: center; ">
+						<h3 id="time" style="width:33%;float:left;line-height:85px;color:#20dbfd;text-shadow:0 0 25px
+						#00d8ff;font-size:46px;font-family: 'yjsz';text-align:right;">Time</h3>
+<!--						<a style="display:block">全省数据</a>-->
+<!--						<a>大同北</a>-->
+<!--						<a>大同南</a>-->
+<!--						<a>朔州</a>-->
+<!--						<a>吕梁北</a>-->
+<!--						<a>吕梁南</a>-->
+<!--						<a>太原</a>-->
+<!--						<a class="active">晋中</a>-->
+<!--						<a>太旧</a>-->
+<!--						<a>长治</a>-->
+					</div>
+					<div class="visualSssf_right">
+						<div class="visualSssf_right_box" id="main51"></div>
+						<div class="visualSssf_right_box" id="main5"></div>
+						<div class="visualSssf_right_box" id="main6"></div>
+						<div class="visualSssf_right_box" id="main7"></div>
+					</div>
+					<div class="clear"></div>
+				</div>
+			</div>
+		</div>
+		<div class="visual_right">
+			<div class="visual_box">
+				<div class="visual_title">
+					<span>Order finished status</span>
+					<img src="images/ksh33.png">
+				</div>
+				<div class="swiper-container visual_swiper1 visual_chart">
+					<div class="swiper-wrapper">
+						<div class="swiper-slide"  id="main3"></div>
+						<div class="swiper-slide"  id="main31"></div>
+					</div>
+				</div>
+			</div>
+			<div class="visual_box visualSfzsfl">
+				<div class="visual_title">
+					<span>Different line color</span>
+					<img src="images/ksh33.png">
+				</div>
+				<div class="visual_chart" id="main9">
+					
+				</div>
+				<div class="visual_table">
+						<p style="font-size: 20px;margin:2px; color:yellow; padding: 10px">---- Cruising</p>
+                        <p style="font-size: 20px;margin:2px; color:green; padding: 10px">---- Pickup</p>
+                        <p style="font-size: 20px;margin:2px; color:red; padding: 10px">---- Delivery</p>
+					</div>
+			</div>
+			<div class="visual_box">
+				<div class="visual_title">
+					<span>Bridge flow rank</span>
+					<img src="images/ksh33.png">
+				</div>
+				<div class="swiper-container visual_swiper2 visual_chart">
+					<div class="swiper-wrapper">
+						<div class="swiper-slide"  id="main4"></div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+	<script type="text/javascript">
+
+		$(function(){
+			var a=$('.visualSssf_left a')
+			for(var i=0;i<a.length;i++){
+				a[i].index=i;
+				a[i].onclick=function(){
+					for(var i=0;i<a.length;i++){
+						a[i].className=''
+						}
+					this.className='active'
+				}
+			}
+
+			var sfzcllH=$('.sfzcll_box').height()
+			var sfzcllHtwo=sfzcllH-2
+			$('.sfzcll_box').css('line-height',sfzcllH+'px')
+			$('.sfzcll_smallBk>div').css('line-height',sfzcllHtwo+'px')
+
+			//删除加载动画
+			$('#load').fadeOut(1000)
+    		setTimeout(function(){    
+    			$('#load').remove()
+    		}
+    		,1100);
+		})
+
+	//交通流量
+	var myChart1 = echarts.init(document.getElementById('main1'));
+    myChart1.setOption(option1);
+	//交通工具流量
+	var myChart2 = echarts.init(document.getElementById('main2'));
+    myChart2.setOption(option2);
+    //本月发生事件
+	var myChart3 = echarts.init(document.getElementById('main3'));
+    myChart3.setOption(option3);
+    var myChart31 = echarts.init(document.getElementById('main31'));
+    myChart31.setOption(option31);
+    var mySwiper1 = new Swiper('.visual_swiper1', {
+		autoplay: true,//可选选项，自动滑动
+		speed:800,//可选选项，滑动速度
+		autoplay: {
+		    delay: 5000,//1秒切换一次
+		  },
+	});
+    //收费站收费排行
+	var myChart4 = echarts.init(document.getElementById('main4'));
+    myChart4.setOption(option4);
+    // var myChart41 = echarts.init(document.getElementById('main41'));
+    // myChart41.setOption(option41);
+    var mySwiper2 = new Swiper('.visual_swiper2', {
+		autoplay: true,//可选选项，自动滑动
+		direction : 'vertical',//可选选项，滑动方向
+		speed:2000,//可选选项，滑动速度
+	});
+    //今日实时收费
+	var executeTime = 70;
+	var myChart51 = echarts.init(document.getElementById('main51'));
+	var myChart5 = echarts.init(document.getElementById('main5'));
+	var myChart6 = echarts.init(document.getElementById('main6'));
+	var myChart7 = echarts.init(document.getElementById('main7'));
+    function sToHms(s){
+      s = Math.floor(s);  //如果输入的是浮点数，则舍弃小数位
+
+      var h = Math.floor(s/3600);  //计算得出小时数
+      if(h<10){  //调整为两位数的格式
+        h = '0'+h;
+      }
+
+      var m = Math.floor(s/60-h*60);  //计算得出分钟数
+      if(m<10){  //调整为两位数的格式
+        m = '0'+m;
+      }
+
+      var s = s%60;  //计算得出剩下的秒数
+      if(s<10){  //调整为两位数的格式
+        s = '0'+s;
+      }
+
+      return h+':'+m+':'+s;  //最后连接成字符串并返回
+    }
+	fetch('../data/simulator_metrics.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+      cTime = document.getElementById('time');
+      for (i = 1; i < 8640; i++) {
+          (function (num) {
+              setTimeout(function () {
+                  var value1 = rs[num * 5 + 36000][0].toFixed(3);
+                  var value2 = rs[num * 5 + 36000][1];
+                  var value3 = rs[num * 5 + 36000][2];
+                  var value4 = rs[num * 5 + 36000][3];
+                cTime.innerHTML = 'Time: ' + sToHms(num * 5 + 36000);
+				option51['series'][0]['data'][0]['value'] = value1*100;
+				option52['series'][0]['data'][0]['value'] = value2*100;
+				option6['series'][0]['data'][0]['value'] = value3*100;
+				option7['series'][0]['data'][0]['value'] = value4*100;
+				option51['series'][0]['data'][1]['value'] = 100-value1;
+				option52['series'][0]['data'][1]['value'] = 100-value2;
+				option6['series'][0]['data'][1]['value'] = 100-value3;
+				option7['series'][0]['data'][1]['value'] = 100-value4;
+				myChart51.setOption(option51,true);
+				myChart5.setOption(option52,true);
+				myChart6.setOption(option6,true);
+				myChart7.setOption(option7,true);
+              }, num * (1000/10));
+          })(i);
+      }
+  });
+    fetch('../data/simulator_metrics_passenger.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+      p5 = document.getElementById('passenger waiting time');
+      p6 = document.getElementById('passenger pickup time');
+      for (i = 0; i < 8640; i ++) {
+          (function (num) {
+              setTimeout(function () {
+                  p5.innerHTML = rs[num * 5 + 36000][0].toFixed(3);
+                  p6.innerHTML = rs[num * 5 + 36000][1].toFixed(3);
+              }, num * (1000/10));
+          })(i);
+      }
+  });
+//中间地图
+				var myChart8 = echarts.init(document.getElementById('main8'));
+				myChart8.setOption(option3);
+				//收费站收费量
+				var myChart9 = echarts.init(document.getElementById('main9'));
+				myChart9.setOption(option9);
+	</script>
+<script>
+
+  /* global BMapGL */
+
+
+  // var map = initMap({
+  //   tilt: 60,
+  //   heading: 0,
+  //   center: [-73.982316, 40.7730913],
+  //   zoom: 13,
+  // });
+
+  // car
+  var map = initMap({
+          tilt: 60,
+          heading: 0,
+          // center: [-73.982316, 40.7730913],
+          center: [-73.972316, 40.7430913],
+          zoom: 14,
+          style: darkStyle,
+          displayOptions: {
+              poi: false
+          },
+
+          skyColors: [
+              // 地面颜色
+              'rgba(226, 237, 248, 0)',
+              // 天空颜色
+              'rgba(186, 211, 252, 1)'
+          ]
+      });
+  var view = new mapvgl.View({
+    map: map
+  });
+
+  var timeOffset = 36000;
+
+  fetch('../data/simulator_animation_100.json').then(function(rs) {
+    return rs.json();
+  }).then(function(rs) {
+    rs = rs.data;
+    var data = [];
+    // var length = 1000;
+    for (var i = 0; i < rs.length; i++) {
+      var type = rs[i].type;
+      var traj_list = rs[i].traj_list;
+      var time_list = rs[i].time_list;
+      var traj = [];
+      var timeArr = [];
+
+      for (var j = 0; j < time_list.length; j++) {
+        timeArr.push(time_list[j]);
+        traj.push([
+          traj_list[j][1],
+          traj_list[j][0],
+          1,
+          time_list[j]- timeOffset
+        ]);
+      }
+      if (type === 1) {
+        data.push({
+        color: 'red',
+        time: timeArr,
+        geometry: {
+          type: 'LineString',
+          coordinates: traj
+        }
+      });
+      }
+      else if(type === 2) {
+          data.push({
+              color: 'green',
+              time: timeArr,
+              geometry: {
+                  type: 'LineString',
+                  coordinates: traj
+              }
+          });
+      }
+      else{
+          data.push({
+              color: 'yellow',
+              time: timeArr,
+              geometry: {
+                  type: 'LineString',
+                  coordinates: traj
+              }
+          });
+          }
+  }
+  var lineLayer = new mapvgl.LineTripLayer({
+    step: 0.3,
+    trailLength: 500,
+    startTime: 0,
+    endTime: 43200,
+  });
+  view.addLayer(lineLayer);
+  lineLayer.setData(data);
+
+});
+
+
+
+</script>
+</body>
+
+</html>
